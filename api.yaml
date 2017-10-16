@@ -1,0 +1,288 @@
+swagger: '2.0'
+info:
+  title: Credential Notification Management Service API
+  description: API for managing notifications preferences (add, get, delete), e.g. the user wants to register for a certain event he wants to be notified about  
+  version: "0.1.0"
+# the domain of the service
+host: services.credential.eu
+# array of all schemes that your API supports
+schemes:
+  - https
+  - http
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+
+  /notificationManagementService/getPreferences:
+    post:
+      summary: get all preferences that are associated with the given accountId
+      description: This method will return all the preferences that are registered for the user within the notifcation preferences database.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: AccountId of the account that the preferences should be retrieved for
+          required: true
+          schema:
+             $ref: '#/definitions/GetPreferencesRequest'
+      responses:
+        200:
+          description: List of preferences that belongs to the given accountId
+          schema:
+            $ref: "#/definitions/GetPreferencesResponse"
+        400:
+          description: Unexpected error (a combination of codesystem/code is used to provide detailed reasons)
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Internal System Error
+
+  /notificationManagementService/addPreferences:
+    post:
+      summary: adds a given set of preferences to the preference database
+      description: adds a given set of preferences to the preference database
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Preferences that should be added to the preference database (preferenceId may be empty and will be ignored in any case)
+          required: true
+          schema:
+             $ref: '#/definitions/AddPreferencesRequest'
+      responses:
+        200:
+          description: Preferences that were added to the preference database (including their newly created UUIDs)
+          schema:
+            $ref: "#/definitions/AddPreferencesResponse"
+        400:
+          description: Unexpected error (a combination of codesystem/code is used to provide detailed reasons)
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Internal System Error
+
+  /notificationManagementService/deletePreferences:
+    post:
+      summary: deletes a given set of preferences
+      description: deletes a given set of preferences
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Preferences that should be deleted (preferenceType may be empty)
+          required: true
+          schema:
+             $ref: '#/definitions/DeletePreferencesRequest'
+      responses:
+        200:
+          description: OK, returns list of deleted preferences
+          schema:
+            $ref: "#/definitions/DeletePreferencesResponse"
+        400:
+          description: Unexpected error (a combination of codesystem/code is used to provide detailed reasons)
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Internal System Error
+
+  /notificationManagementService/resetPreferences:
+    post:
+      summary: will reset notification preferences to system default
+      description: will reset notification preferences to system default
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: AccountId that the preferences should be reset for
+          required: true
+          schema:
+             $ref: '#/definitions/ResetPreferencesRequest'
+      responses:
+        200:
+          description: OK, returns the list of remaining preferences
+          schema:
+            $ref: "#/definitions/ResetPreferencesResponse"
+        400:
+          description: Unexpected error (a combination of codesystem/code is used to provide detailed reasons)
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Internal System Error
+
+definitions:
+  GetPreferencesRequest:
+    type: object
+    description: Request messages that triggers the return of all preferences existing for a certain accountId
+    properties:
+      accountId:
+        $ref: "#/definitions/Identifier"
+      preferenceDetailFilter:
+        type: array
+        items: 
+          $ref: "#/definitions/KeyValue"
+
+  GetPreferencesResponse:
+    type: object
+    description: Response message that will return all preferences existing for a certain accountId
+    required:
+    - preferenceList
+    properties:
+      preferenceList:
+        $ref: "#/definitions/PreferenceList"
+
+  AddPreferencesRequest:
+    type: object
+    description: Request message that contains a list of preferences that should be added
+    required:
+    - preferenceList
+    properties:
+      preferenceList:
+        $ref: "#/definitions/PreferenceList"
+
+  AddPreferencesResponse:
+    type: object
+    description: Response message that contains a list of all added preferences
+    required:
+    - preferenceList
+    properties:
+      preferenceList:
+        $ref: "#/definitions/PreferenceList"
+
+  DeletePreferencesRequest:
+    type: object
+    description: Request message that contains a list of preferences that should be deleted
+    required:
+    - preferenceList
+    properties:
+      preferenceList:
+        $ref: "#/definitions/PreferenceList"
+
+  DeletePreferencesResponse:
+    type: object
+    description: Response message that contains a list of all deleted preferences
+    required:
+    - preferenceList
+    properties:
+      preferenceList:
+        $ref: "#/definitions/PreferenceList"
+
+  ResetPreferencesRequest:
+    type: object
+    description: Request message to reset the preferences of a given accountId
+    required:
+    - accountId
+    properties:
+      accountId:
+        $ref: "#/definitions/Identifier"
+
+  ResetPreferencesResponse:
+    type: object
+    description: Response message that includes the list of all newly set notification preferences after the reset
+    required:
+    - preferenceList
+    properties:
+      preferenceList:
+        $ref: "#/definitions/PreferenceList"
+
+  PreferenceList:
+    type: array
+    items: 
+      $ref: "#/definitions/Preference"
+
+  Preference:
+    type: object
+    description: represents a single notification preference of a user
+    required:
+    - accountId
+    - preferenceType
+    properties:
+      accountId:
+        $ref: "#/definitions/Identifier"
+      preferenceId:
+        $ref: "#/definitions/Identifier"
+      preferenceType:
+        $ref: "#/definitions/Coding"
+      preferenceCreationTime:
+        type: string
+        format: date-time
+        description: time of preference creation 
+      preferenceDetails:
+        type: array
+        items: 
+          $ref: "#/definitions/KeyValue"
+
+  Error:
+    type: object
+    description: detailed description of the error
+    required:
+    - errorType
+    properties:
+      errorType:
+        $ref: "#/definitions/Coding"
+      errorDetails:
+        type: array
+        items:
+          $ref: "#/definitions/KeyValue"
+
+  KeyValue:
+    type: object
+    description: A value that is described by a specific coding
+    required:
+    - key
+    - value
+    properties:
+      key:
+        $ref: "#/definitions/Coding"
+      value:
+        type: string
+        format: string
+        description: value
+
+  Identifier:
+    type: object
+    description: An identifier intended for computation
+    required:
+    - value
+    properties:
+      type:
+        $ref: "#/definitions/Coding"
+      namespace:
+        type: string
+        description: The namespace for the identifier value
+      value:
+        type: string
+        description: The value that is unique
+
+  Coding:
+    type: object
+    description: A reference to a code defined by a terminology system
+    required:
+    - system
+    - code
+    properties:
+      system:
+        type: string
+        description: Identity of the terminology system
+      version:
+        type: string
+        description: Version of the system - if relevant
+      code:
+        type: string
+        description: Symbol in syntax defined by the system
+      display:
+        type: string
+        description: Representation defined by the system

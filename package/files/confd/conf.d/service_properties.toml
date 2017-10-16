@@ -1,0 +1,6 @@
+[template]
+src = "service.properties.tmpl"
+dest = "/tmp/service.properties"
+keys = [
+    "server_port"
+]
