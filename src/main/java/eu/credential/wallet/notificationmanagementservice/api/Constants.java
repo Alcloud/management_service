@@ -2,7 +2,7 @@ package eu.credential.wallet.notificationmanagementservice.api;
 
 public final class Constants {
 
-		// property keys
+		// property key
 		public static final String PROPS_OUTPUT_CHANNELS = "output.channels";
 		public static final String PROPS_OUTPUT_PREFIX = "output";
 		public static final String PROPS_LOG_LEVEL = "log.level";
